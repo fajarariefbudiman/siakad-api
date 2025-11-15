@@ -73,35 +73,38 @@ func GetKRSByUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": krss})
 }
 
-func DeleteKRS(c *gin.Context) {
-	krsIDStr := c.Param("id")
+func DeleteCourseFromKRS(c *gin.Context) {
+	krsIDStr := c.Param("krs_id")
+	detailIDStr := c.Param("detail_id")
+
 	krsID, err := strconv.ParseUint(krsIDStr, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid KRS ID"})
+	detailID, err2 := strconv.ParseUint(detailIDStr, 10, 64)
+
+	if err != nil || err2 != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	var krs models.KRS
-	if err := config.DB.Preload("Courses").First(&krs, krsID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "KRS not found"})
+	// Pastikan detail ada
+	var detail models.KRSDetail
+	if err := config.DB.First(&detail, detailID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Course detail not found"})
 		return
 	}
 
-	// Hapus semua course terkait
-	if len(krs.Details) > 0 {
-		if err := config.DB.Delete(&krs.Details).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete courses"})
-			return
-		}
-	}
-
-	// Hapus KRS
-	if err := config.DB.Delete(&krs).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete KRS"})
+	// Pastikan benar-benar milik KRS tersebut
+	if detail.KRSID != uint(krsID) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Course does not belong to this KRS"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "KRS deleted successfully"})
+	// Hapus hanya satu detail
+	if err := config.DB.Delete(&detail).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete course"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Course removed from KRS"})
 }
 
 func AddCourseToKRS(c *gin.Context) {
