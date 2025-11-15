@@ -125,13 +125,22 @@ func Seed() {
 		gpa := totalPoint / float32(totalSKS)
 
 		// Buat KHS dari semua KRSDetail
+		// Buat KHS dari semua KRSDetail
 		khs := models.KHS{
 			UserID:     student.ID,
 			SemesterID: sem.ID,
 			GPA:        gpa,
-			Details:    krsDetails,
 		}
 		db.Create(&khs)
+
+		// === Tambahkan relasi ke KRSDetail === //
+		for i := range krsDetails {
+			krsDetails[i].KHSID = &khs.ID
+			db.Model(&krsDetails[i]).Update("khs_id", khs.ID)
+		}
+
+		// Append details ke KHS
+		db.Model(&khs).Association("Details").Append(krsDetails)
 
 		log.Printf("KRS & KHS %s created with %d courses", key, len(courses))
 	}

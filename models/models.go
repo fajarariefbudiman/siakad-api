@@ -52,11 +52,13 @@ type Course struct {
 
 // KRSDetail → menyimpan nilai per mata kuliah dari KRS
 type KRSDetail struct {
-	ID       uint `gorm:"primaryKey"`
-	KRSID    uint `json:"krs_id"`
-	CourseID uint `json:"course_id"`
+	ID    uint  `gorm:"primaryKey"`
+	KRSID uint  `json:"krs_id"`
+	KHSID *uint `json:"khs_id"` // tambahkan ini
 
-	Course    Course    `gorm:"foreignKey:CourseID"`
+	CourseID uint   `json:"course_id"`
+	Course   Course `gorm:"foreignKey:CourseID"`
+
 	Grade     string    `json:"grade"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -70,7 +72,7 @@ type KHS struct {
 	GPA        float32     `json:"gpa"`
 	CreatedAt  time.Time   `json:"created_at"`
 	UpdatedAt  time.Time   `json:"updated_at"`
-	Details    []KRSDetail `json:"details" gorm:"-"` // isi KRSDetail saat query
+	Details    []KRSDetail `json:"details" gorm:"foreignKey:KHSID"`
 }
 
 // Payment dan Post tetap sama
