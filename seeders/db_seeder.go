@@ -78,31 +78,31 @@ func Seed() {
 
 	krsData := map[string][]models.Course{
 		"2021/2022-Ganjil": {
-			{CourseCode: "IF101", CourseName: "Pengantar Informatika", SKS: 2, Lecturer: "Dr. Budi Santoso"},
-			{CourseCode: "IF102", CourseName: "Matematika Dasar", SKS: 3, Lecturer: "Mila Rahma, M.Kom"},
+			{CourseCode: "IF101", CourseName: "Pengantar Informatika", SKS: 2, Lecturer: "Dr. Budi Santoso", Grade: "A"},
+			{CourseCode: "IF102", CourseName: "Matematika Dasar", SKS: 3, Lecturer: "Mila Rahma, M.Kom", Grade: "B+"},
 		},
 		"2021/2022-Genap": {
-			{CourseCode: "IF103", CourseName: "Logika & Algoritma", SKS: 3, Lecturer: "Dr. Budi Santoso"},
-			{CourseCode: "IF104", CourseName: "Pemrograman Dasar", SKS: 3, Lecturer: "Mila Rahma, M.Kom"},
+			{CourseCode: "IF103", CourseName: "Logika & Algoritma", SKS: 3, Lecturer: "Dr. Budi Santoso", Grade: "A-"},
+			{CourseCode: "IF104", CourseName: "Pemrograman Dasar", SKS: 3, Lecturer: "Mila Rahma, M.Kom", Grade: "B"},
 		},
 		"2022/2023-Ganjil": {
-			{CourseCode: "IF201", CourseName: "Struktur Data", SKS: 3, Lecturer: "Dr. Budi Santoso"},
-			{CourseCode: "IF202", CourseName: "Basis Data", SKS: 3, Lecturer: "Mila Rahma, M.Kom"},
+			{CourseCode: "IF201", CourseName: "Struktur Data", SKS: 3, Lecturer: "Dr. Budi Santoso", Grade: "A"},
+			{CourseCode: "IF202", CourseName: "Basis Data", SKS: 3, Lecturer: "Mila Rahma, M.Kom", Grade: "B+"},
 		},
 		"2022/2023-Genap": {
-			{CourseCode: "IF203", CourseName: "Sistem Informasi", SKS: 2, Lecturer: "Dr. Budi Santoso"},
-			{CourseCode: "IF204", CourseName: "Analisis Sistem", SKS: 3, Lecturer: "Mila Rahma, M.Kom"},
+			{CourseCode: "IF203", CourseName: "Sistem Informasi", SKS: 2, Lecturer: "Dr. Budi Santoso", Grade: "A-"},
+			{CourseCode: "IF204", CourseName: "Analisis Sistem", SKS: 3, Lecturer: "Mila Rahma, M.Kom", Grade: "B+"},
 		},
 		"2023/2024-Ganjil": {
-			{CourseCode: "IF301", CourseName: "Pemrograman Web", SKS: 3, Lecturer: "Dr. Budi Santoso"},
-			{CourseCode: "IF302", CourseName: "Jaringan Komputer", SKS: 3, Lecturer: "Mila Rahma, M.Kom"},
+			{CourseCode: "IF301", CourseName: "Pemrograman Web", SKS: 3, Lecturer: "Dr. Budi Santoso", Grade: "A"},
+			{CourseCode: "IF302", CourseName: "Jaringan Komputer", SKS: 3, Lecturer: "Mila Rahma, M.Kom", Grade: "A-"},
 		},
 		"2023/2024-Genap": {
-			{CourseCode: "IF303", CourseName: "Manajemen Proyek IT", SKS: 3, Lecturer: "Dr. Budi Santoso"},
+			{CourseCode: "IF303", CourseName: "Manajemen Proyek IT", SKS: 3, Lecturer: "Dr. Budi Santoso", Grade: "B+"},
 		},
 		"2024/2025-Ganjil": {
-			{CourseCode: "IF401", CourseName: "Mobile Programming", SKS: 3, Lecturer: "Dr. Budi Santoso"},
-			{CourseCode: "IF402", CourseName: "Machine Learning", SKS: 3, Lecturer: "Mila Rahma, M.Kom"},
+			{CourseCode: "IF401", CourseName: "Mobile Programming", SKS: 3, Lecturer: "Dr. Budi Santoso", Grade: "A"},
+			{CourseCode: "IF402", CourseName: "Machine Learning", SKS: 3, Lecturer: "Mila Rahma, M.Kom", Grade: "A-"},
 		},
 	}
 

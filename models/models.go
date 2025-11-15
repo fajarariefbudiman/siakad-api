@@ -45,6 +45,7 @@ type Course struct {
 	CourseName string    `gorm:"type:varchar(150)" json:"course_name"`
 	Lecturer   string    `gorm:"type:varchar(100)" json:"lecturer"` // dosen
 	SKS        int       `json:"sks"`
+	Grade      string    `gorm:"type:varchar(5)" json:"grade"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 }
