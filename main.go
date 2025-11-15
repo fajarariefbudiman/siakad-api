@@ -84,8 +84,8 @@ func main() {
 			auth.DELETE("/krs/:krs_id/course/:detail_id", controllers.DeleteCourseFromKRS)
 			auth.POST("/krs/:id/course", controllers.AddCourseToKRS)
 
-			auth.POST("/", controllers.CreateTugasAkhir)
-			auth.GET("/tugas_akhir/:category", controllers.GetTugasAkhirByCategory)
+			auth.POST("/tugas-akhir", controllers.CreateTugasAkhir)
+			auth.GET("/tugas-akhir/:category", controllers.GetTugasAkhirByCategory)
 
 			// khs
 			auth.GET("/khs", controllers.ListKHS)
