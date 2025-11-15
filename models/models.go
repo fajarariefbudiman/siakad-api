@@ -52,7 +52,7 @@ type Course struct {
 
 // KRSDetail → menyimpan nilai per mata kuliah dari KRS
 type KRSDetail struct {
-	ID    uint  `gorm:"primaryKey"`
+	ID    uint  `gorm:"primaryKey" json:"id"`
 	KRSID uint  `json:"krs_id"`
 	KHSID *uint `json:"khs_id"` // tambahkan ini
 
