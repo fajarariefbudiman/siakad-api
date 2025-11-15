@@ -68,3 +68,34 @@ func GetKRSByUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"data": krss})
 }
+
+func DeleteKRS(c *gin.Context) {
+	krsIDStr := c.Param("id")
+	krsID, err := strconv.ParseUint(krsIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid KRS ID"})
+		return
+	}
+
+	var krs models.KRS
+	if err := config.DB.Preload("Courses").First(&krs, krsID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "KRS not found"})
+		return
+	}
+
+	// Hapus semua course terkait
+	if len(krs.Courses) > 0 {
+		if err := config.DB.Delete(&krs.Courses).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete courses"})
+			return
+		}
+	}
+
+	// Hapus KRS
+	if err := config.DB.Delete(&krs).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete KRS"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "KRS deleted successfully"})
+}
