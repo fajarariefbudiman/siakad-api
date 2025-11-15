@@ -4,6 +4,8 @@ import (
 	"api-siakad/config"
 	"api-siakad/models"
 	"log"
+	"math/rand"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -12,30 +14,14 @@ func Seed() {
 	db := config.DB
 	log.Println("Running Seeder...")
 
+	rand.Seed(time.Now().UnixNano())
+
 	hash, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
 
 	users := []models.User{
-		{
-			Name:     "Rahman Fajar Banyu Adji",
-			Email:    "rahman@student.com",
-			Nim:      "230441001",
-			Password: string(hash),
-			Role:     "student",
-		},
-		{
-			Name:     "Dr. Budi Santoso",
-			Email:    "budi@dosen.com",
-			Nim:      "DSN001",
-			Password: string(hash),
-			Role:     "dosen",
-		},
-		{
-			Name:     "Mila Rahma, M.Kom",
-			Email:    "mila@dosen.com",
-			Nim:      "DSN002",
-			Password: string(hash),
-			Role:     "dosen",
-		},
+		{Name: "Rahman Fajar Banyu Adji", Email: "rahman@student.com", Nim: "230441001", Password: string(hash), Role: "student"},
+		{Name: "Dr. Budi Santoso", Email: "budi@dosen.com", Nim: "DSN001", Password: string(hash), Role: "dosen"},
+		{Name: "Mila Rahma, M.Kom", Email: "mila@dosen.com", Nim: "DSN002", Password: string(hash), Role: "dosen"},
 	}
 
 	for _, u := range users {
@@ -48,7 +34,6 @@ func Seed() {
 		}
 	}
 
-	// Ambil user mahasiswa
 	var student models.User
 	db.Where("email = ?", "rahman@student.com").First(&student)
 
@@ -72,125 +57,84 @@ func Seed() {
 		}
 	}
 
-	// Ambil semester aktif
-	var activeSemester models.Semester
-	db.Where("active = ?", true).First(&activeSemester)
+	var semesterList []models.Semester
+	db.Find(&semesterList)
 
 	krsData := map[string][]models.Course{
 		"2021/2022-Ganjil": {
-			{CourseCode: "IF101", CourseName: "Pengantar Informatika", SKS: 2, Lecturer: "Dr. Budi Santoso", Grade: "A"},
-			{CourseCode: "IF102", CourseName: "Matematika Dasar", SKS: 3, Lecturer: "Mila Rahma, M.Kom", Grade: "B+"},
+			{CourseCode: "IF101", CourseName: "Pengantar Informatika", SKS: 2, Lecturer: "Dr. Budi Santoso"},
+			{CourseCode: "IF102", CourseName: "Matematika Dasar", SKS: 3, Lecturer: "Mila Rahma, M.Kom"},
 		},
 		"2021/2022-Genap": {
-			{CourseCode: "IF103", CourseName: "Logika & Algoritma", SKS: 3, Lecturer: "Dr. Budi Santoso", Grade: "A-"},
-			{CourseCode: "IF104", CourseName: "Pemrograman Dasar", SKS: 3, Lecturer: "Mila Rahma, M.Kom", Grade: "B"},
+			{CourseCode: "IF103", CourseName: "Logika & Algoritma", SKS: 3, Lecturer: "Dr. Budi Santoso"},
+			{CourseCode: "IF104", CourseName: "Pemrograman Dasar", SKS: 3, Lecturer: "Mila Rahma, M.Kom"},
 		},
-		"2022/2023-Ganjil": {
-			{CourseCode: "IF201", CourseName: "Struktur Data", SKS: 3, Lecturer: "Dr. Budi Santoso", Grade: "A"},
-			{CourseCode: "IF202", CourseName: "Basis Data", SKS: 3, Lecturer: "Mila Rahma, M.Kom", Grade: "B+"},
-		},
-		"2022/2023-Genap": {
-			{CourseCode: "IF203", CourseName: "Sistem Informasi", SKS: 2, Lecturer: "Dr. Budi Santoso", Grade: "A-"},
-			{CourseCode: "IF204", CourseName: "Analisis Sistem", SKS: 3, Lecturer: "Mila Rahma, M.Kom", Grade: "B+"},
-		},
-		"2023/2024-Ganjil": {
-			{CourseCode: "IF301", CourseName: "Pemrograman Web", SKS: 3, Lecturer: "Dr. Budi Santoso", Grade: "A"},
-			{CourseCode: "IF302", CourseName: "Jaringan Komputer", SKS: 3, Lecturer: "Mila Rahma, M.Kom", Grade: "A-"},
-		},
-		"2023/2024-Genap": {
-			{CourseCode: "IF303", CourseName: "Manajemen Proyek IT", SKS: 3, Lecturer: "Dr. Budi Santoso", Grade: "B+"},
-		},
-		"2024/2025-Ganjil": {
-			{CourseCode: "IF401", CourseName: "Mobile Programming", SKS: 3, Lecturer: "Dr. Budi Santoso", Grade: "A"},
-			{CourseCode: "IF402", CourseName: "Machine Learning", SKS: 3, Lecturer: "Mila Rahma, M.Kom", Grade: "A-"},
-		},
+		// dst sesuai data
 	}
 
-	var semesterList []models.Semester
-	db.Find(&semesterList)
+	grades := []string{"A", "A-", "B+", "B", "B-", "C+", "C"}
 
 	for _, sem := range semesterList {
 		key := sem.Year + "-" + sem.Term
 
-		// cek krs
 		var existingKRS models.KRS
 		if err := db.Where("user_id = ? AND semester_id = ?", student.ID, sem.ID).First(&existingKRS).Error; err == nil {
 			log.Printf("KRS %s exists, skipping...", key)
 			continue
 		}
 
-		krs := models.KRS{
-			UserID:     student.ID,
-			SemesterID: sem.ID,
-			Finalized:  true,
-		}
+		// Create KRS
+		krs := models.KRS{UserID: student.ID, SemesterID: sem.ID, Finalized: true}
 		db.Create(&krs)
 
-		// tambah courses
-		for _, c := range krsData[key] {
+		courses := krsData[key]
+
+		// Buat Course & KRSDetail
+		var krsDetails []models.KRSDetail
+		for _, c := range courses {
 			c.KRSID = krs.ID
 			db.Create(&c)
+
+			randomGrade := grades[rand.Intn(len(grades))]
+
+			krsDetail := models.KRSDetail{
+				KRSID:    krs.ID,
+				CourseID: c.ID,
+				SKS:      c.SKS,
+				Grade:    randomGrade,
+			}
+			db.Create(&krsDetail)
+			krsDetails = append(krsDetails, krsDetail)
 		}
 
-		log.Printf("KRS %s created with courses", key)
-	}
+		// Hitung GPA sederhana (misal A=4, A-=3.7, B+=3.3, B=3, dst)
+		var totalSKS int
+		var totalPoint float32
+		gradeMap := map[string]float32{
+			"A":  4.0,
+			"A-": 3.7,
+			"B+": 3.3,
+			"B":  3.0,
+			"B-": 2.7,
+			"C+": 2.3,
+			"C":  2.0,
+		}
+		for _, d := range krsDetails {
+			totalSKS += d.SKS
+			totalPoint += float32(d.SKS) * gradeMap[d.Grade]
+		}
+		gpa := totalPoint / float32(totalSKS)
 
-	khsData := []models.KHS{
-		{UserID: student.ID, SemesterID: semesterList[0].ID, GPA: 3.10},
-		{UserID: student.ID, SemesterID: semesterList[1].ID, GPA: 3.20},
-		{UserID: student.ID, SemesterID: semesterList[2].ID, GPA: 3.25},
-		{UserID: student.ID, SemesterID: semesterList[3].ID, GPA: 3.30},
-		{UserID: student.ID, SemesterID: semesterList[4].ID, GPA: 3.40},
-		{UserID: student.ID, SemesterID: semesterList[5].ID, GPA: 3.45},
-		{UserID: student.ID, SemesterID: activeSemester.ID, GPA: 3.50},
-	}
-
-	for _, khs := range khsData {
-		var exists models.KHS
-		if err := db.Where("user_id = ? AND semester_id = ?", khs.UserID, khs.SemesterID).First(&exists).Error; err == nil {
-			continue
+		// Buat KHS dari semua KRSDetail
+		khs := models.KHS{
+			UserID:     student.ID,
+			SemesterID: sem.ID,
+			GPA:        gpa,
+			Details:    krsDetails,
 		}
 		db.Create(&khs)
-	}
 
-	payments := []models.Payment{
-		{UserID: student.ID, Amount: 2500000, Description: "Pembayaran Semester 1", Paid: true},
-		{UserID: student.ID, Amount: 2500000, Description: "Pembayaran Semester 2", Paid: true},
-		{UserID: student.ID, Amount: 2750000, Description: "Pembayaran Semester 3", Paid: true},
-		{UserID: student.ID, Amount: 2750000, Description: "Pembayaran Semester 4", Paid: true},
-		{UserID: student.ID, Amount: 3000000, Description: "Pembayaran Semester 5", Paid: false},
-		{UserID: student.ID, Amount: 3000000, Description: "Pembayaran Semester 6", Paid: false},
-	}
-
-	for _, p := range payments {
-		var exists models.Payment
-		if err := db.Where("user_id = ? AND description = ?", p.UserID, p.Description).First(&exists).Error; err == nil {
-			continue
-		}
-		db.Create(&p)
-	}
-
-	posts := []models.Post{
-		{
-			Title:     "Pengumuman Libur Nasional",
-			Slug:      "libur-nasional",
-			Body:      "Kampus akan libur pada tanggal 17 Agustus.",
-			Published: true,
-		},
-		{
-			Title:     "Pendaftaran Wisuda 2025",
-			Slug:      "pendaftaran-wisuda",
-			Body:      "Pendaftaran wisuda telah dibuka hingga 30 Juni.",
-			Published: true,
-		},
-	}
-
-	for _, post := range posts {
-		var exists models.Post
-		if err := db.Where("slug = ?", post.Slug).First(&exists).Error; err == nil {
-			continue
-		}
-		db.Create(&post)
+		log.Printf("KRS & KHS %s created with %d courses", key, len(courses))
 	}
 
 	log.Println("🎉 Seeder Selesai")

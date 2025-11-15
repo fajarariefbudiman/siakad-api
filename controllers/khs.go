@@ -9,19 +9,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// List semua KHS beserta Courses per semester
+// List semua KHS beserta KRSDetail per semester
 func ListKHS(c *gin.Context) {
 	var khsList []models.KHS
 	config.DB.Find(&khsList)
 
 	for i := range khsList {
-		var krs models.KRS
-		// Ambil KRS user + semester dan preload Courses
-		if err := config.DB.Preload("Courses").Where("user_id = ? AND semester_id = ?", khsList[i].UserID, khsList[i].SemesterID).First(&krs).Error; err == nil {
-			khsList[i].Courses = krs.Courses
-		} else {
-			khsList[i].Courses = []models.Course{}
-		}
+		var krsIDs []uint
+		config.DB.Model(&models.KRS{}).Where("user_id = ? AND semester_id = ?", khsList[i].UserID, khsList[i].SemesterID).Pluck("id", &krsIDs)
+
+		var details []models.KRSDetail
+		config.DB.Preload("Course").Where("krs_id IN ?", krsIDs).Find(&details)
+
+		khsList[i].Details = details
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": khsList})
@@ -36,18 +36,19 @@ func GetKHSByUser(c *gin.Context) {
 	config.DB.Where("user_id = ?", userID).Find(&khsList)
 
 	for i := range khsList {
-		var krs models.KRS
-		if err := config.DB.Preload("Courses").Where("user_id = ? AND semester_id = ?", khsList[i].UserID, khsList[i].SemesterID).First(&krs).Error; err == nil {
-			khsList[i].Courses = krs.Courses
-		} else {
-			khsList[i].Courses = []models.Course{}
-		}
+		var krsIDs []uint
+		config.DB.Model(&models.KRS{}).Where("user_id = ? AND semester_id = ?", khsList[i].UserID, khsList[i].SemesterID).Pluck("id", &krsIDs)
+
+		var details []models.KRSDetail
+		config.DB.Preload("Course").Where("krs_id IN ?", krsIDs).Find(&details)
+
+		khsList[i].Details = details
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": khsList})
 }
 
-// Create KHS (GPA)
+// Create KHS
 func CreateKHS(c *gin.Context) {
 	var payload models.KHS
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -60,13 +61,14 @@ func CreateKHS(c *gin.Context) {
 		return
 	}
 
-	// Ambil courses untuk semester itu
-	var krs models.KRS
-	if err := config.DB.Preload("Courses").Where("user_id = ? AND semester_id = ?", payload.UserID, payload.SemesterID).First(&krs).Error; err == nil {
-		payload.Courses = krs.Courses
-	} else {
-		payload.Courses = []models.Course{}
-	}
+	// Ambil KRSDetail untuk semester itu
+	var krsIDs []uint
+	config.DB.Model(&models.KRS{}).Where("user_id = ? AND semester_id = ?", payload.UserID, payload.SemesterID).Pluck("id", &krsIDs)
+
+	var details []models.KRSDetail
+	config.DB.Preload("Course").Where("krs_id IN ?", krsIDs).Find(&details)
+
+	payload.Details = details
 
 	c.JSON(http.StatusCreated, gin.H{"data": payload})
 }
