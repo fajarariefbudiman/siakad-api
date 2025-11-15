@@ -99,3 +99,28 @@ func DeleteKRS(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "KRS deleted successfully"})
 }
+func AddCourseToKRS(c *gin.Context) {
+	krsIDStr := c.Param("id")
+	krsID, err := strconv.ParseUint(krsIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid KRS ID"})
+		return
+	}
+
+	var payload models.Course
+
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Set KRSID agar mengikat ke KRS tersebut
+	payload.KRSID = uint(krsID)
+
+	if err := config.DB.Create(&payload).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add course"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"data": payload})
+}

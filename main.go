@@ -82,6 +82,7 @@ func main() {
 			auth.POST("/krs", controllers.CreateKRS)
 			auth.GET("/krs/user/:user_id", controllers.GetKRSByUser)
 			auth.DELETE("/krs/:id", controllers.DeleteKRS)
+			auth.POST("/krs/:id/course", controllers.AddCourseToKRS)
 
 			// khs
 			auth.GET("/khs", controllers.ListKHS)
