@@ -35,7 +35,6 @@ type KRS struct {
 	Finalized  bool        `json:"finalized"`
 	CreatedAt  time.Time   `json:"created_at"`
 	UpdatedAt  time.Time   `json:"updated_at"`
-	Courses    []Course    `json:"courses" gorm:"foreignKey:KRSID"` // input course
 	Details    []KRSDetail `json:"details" gorm:"foreignKey:KRSID"` // KRSDetail berisi grade dan nilai
 }
 
@@ -53,11 +52,12 @@ type Course struct {
 
 // KRSDetail → menyimpan nilai per mata kuliah dari KRS
 type KRSDetail struct {
-	ID        uint      `gorm:"primarykey" json:"id"`
-	KRSID     uint      `json:"krs_id"`    // relasi ke KRS
-	CourseID  uint      `json:"course_id"` // relasi ke Course
-	Grade     string    `gorm:"type:varchar(5)" json:"grade"`
-	SKS       int       `json:"sks"` // bisa ambil dari Course
+	ID       uint `gorm:"primaryKey"`
+	KRSID    uint `json:"krs_id"`
+	CourseID uint `json:"course_id"`
+
+	Course    Course    `gorm:"foreignKey:CourseID"`
+	Grade     string    `json:"grade"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

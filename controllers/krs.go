@@ -64,7 +64,11 @@ func GetKRSByUser(c *gin.Context) {
 
 	var krss []models.KRS
 	// preload Courses, bukan Details
-	config.DB.Preload("Courses").Where("user_id = ?", userID).Find(&krss)
+	config.DB.
+		Preload("Details").
+		Preload("Details.Course").
+		Where("user_id = ?", userID).
+		Find(&krss)
 
 	c.JSON(http.StatusOK, gin.H{"data": krss})
 }
@@ -84,8 +88,8 @@ func DeleteKRS(c *gin.Context) {
 	}
 
 	// Hapus semua course terkait
-	if len(krs.Courses) > 0 {
-		if err := config.DB.Delete(&krs.Courses).Error; err != nil {
+	if len(krs.Details) > 0 {
+		if err := config.DB.Delete(&krs.Details).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete courses"})
 			return
 		}
@@ -99,6 +103,7 @@ func DeleteKRS(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "KRS deleted successfully"})
 }
+
 func AddCourseToKRS(c *gin.Context) {
 	krsIDStr := c.Param("id")
 	krsID, err := strconv.ParseUint(krsIDStr, 10, 64)
@@ -107,20 +112,33 @@ func AddCourseToKRS(c *gin.Context) {
 		return
 	}
 
-	var payload models.Course
+	var payload struct {
+		CourseID uint `json:"course_id"`
+	}
 
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Set KRSID agar mengikat ke KRS tersebut
-	payload.KRSID = uint(krsID)
+	// Pastikan course ada
+	var course models.Course
+	if err := config.DB.First(&course, payload.CourseID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Course not found"})
+		return
+	}
 
-	if err := config.DB.Create(&payload).Error; err != nil {
+	// Tambahkan ke detail
+	detail := models.KRSDetail{
+		KRSID:    uint(krsID),
+		CourseID: payload.CourseID,
+		Grade:    "-",
+	}
+
+	if err := config.DB.Create(&detail).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add course"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"data": payload})
+	c.JSON(http.StatusCreated, gin.H{"data": detail})
 }

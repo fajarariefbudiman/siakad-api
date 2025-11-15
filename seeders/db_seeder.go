@@ -100,7 +100,6 @@ func Seed() {
 			krsDetail := models.KRSDetail{
 				KRSID:    krs.ID,
 				CourseID: c.ID,
-				SKS:      c.SKS,
 				Grade:    randomGrade,
 			}
 			db.Create(&krsDetail)
@@ -120,8 +119,8 @@ func Seed() {
 			"C":  2.0,
 		}
 		for _, d := range krsDetails {
-			totalSKS += d.SKS
-			totalPoint += float32(d.SKS) * gradeMap[d.Grade]
+			totalSKS += d.Course.SKS
+			totalPoint += float32(d.Course.SKS) * gradeMap[d.Grade]
 		}
 		gpa := totalPoint / float32(totalSKS)
 
