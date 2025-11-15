@@ -28,20 +28,22 @@ type Semester struct {
 }
 
 type KRS struct {
-	ID         uint        `gorm:"primarykey" json:"id"`
-	UserID     uint        `json:"user_id"`
-	SemesterID uint        `json:"semester_id"`
-	Finalized  bool        `json:"finalized"`
-	CreatedAt  time.Time   `json:"created_at"`
-	UpdatedAt  time.Time   `json:"updated_at"`
-	Details    []KRSDetail `json:"details" gorm:"foreignKey:KRSID"`
+	ID         uint      `gorm:"primarykey" json:"id"`
+	UserID     uint      `json:"user_id"`
+	SemesterID uint      `json:"semester_id"`
+	Finalized  bool      `json:"finalized"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	Courses    []Course  `json:"courses" gorm:"foreignKey:KRSID"`
 }
 
-type KRSDetail struct {
+// Rename KRSDetail jadi Course dan tambah Lecturer
+type Course struct {
 	ID         uint      `gorm:"primarykey" json:"id"`
-	KRSID      uint      `json:"krs_id"`
+	KRSID      uint      `json:"krs_id"` // relasi ke KRS
 	CourseCode string    `gorm:"type:varchar(20)" json:"course_code"`
 	CourseName string    `gorm:"type:varchar(150)" json:"course_name"`
+	Lecturer   string    `gorm:"type:varchar(100)" json:"lecturer"` // dosen
 	SKS        int       `json:"sks"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
@@ -54,6 +56,7 @@ type KHS struct {
 	GPA        float32   `json:"gpa"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
+	Courses    []Course  `json:"courses" gorm:"-"`
 }
 
 type Payment struct {

@@ -11,7 +11,29 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"gorm.io/gorm"
 )
+
+// DropAllTables akan menghapus semua tabel di database
+func DropAllTables(db *gorm.DB) {
+	var tables []string
+
+	// Cek jenis DB (Postgres atau MySQL/SQLite)
+	dialect := db.Dialector.Name()
+
+	if dialect == "postgres" {
+		db.Raw("SELECT tablename FROM pg_tables WHERE schemaname='public'").Scan(&tables)
+	} else {
+		db.Raw("SHOW TABLES").Scan(&tables)
+	}
+
+	for _, table := range tables {
+		log.Printf("Dropping table: %s", table)
+		db.Migrator().DropTable(table)
+	}
+
+	log.Println("All tables dropped!")
+}
 
 func main() {
 	// Load env
@@ -21,11 +43,15 @@ func main() {
 
 	// connect DB
 	config.ConnectDatabase()
-
-	// Auto migrate
 	db := config.DB
-	db.AutoMigrate(&models.User{}, &models.Semester{}, &models.KRS{}, &models.KRSDetail{}, &models.KHS{}, &models.Payment{}, &models.Post{})
 
+	// Hapus semua tabel
+	DropAllTables(db)
+
+	// Migrasi ulang semua tabel
+	db.AutoMigrate(&models.User{}, &models.Semester{}, &models.KRS{}, &models.Course{}, &models.KHS{}, &models.Payment{}, &models.Post{})
+
+	// Seed data
 	seeders.Seed()
 
 	r := gin.Default()

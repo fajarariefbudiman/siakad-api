@@ -11,6 +11,7 @@ import (
 func Seed() {
 	db := config.DB
 	log.Println("Running Seeder...")
+
 	hash, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
 
 	users := []models.User{
@@ -52,13 +53,13 @@ func Seed() {
 	db.Where("email = ?", "rahman@student.com").First(&student)
 
 	semesters := []models.Semester{
-		{Year: "2021/2022", Term: "Ganjil", Active: false}, // S1
-		{Year: "2021/2022", Term: "Genap", Active: false},  // S2
-		{Year: "2022/2023", Term: "Ganjil", Active: false}, // S3
-		{Year: "2022/2023", Term: "Genap", Active: false},  // S4
-		{Year: "2023/2024", Term: "Ganjil", Active: false}, // S5
-		{Year: "2023/2024", Term: "Genap", Active: false},  // S6
-		{Year: "2024/2025", Term: "Ganjil", Active: true},  // S7 (aktif)
+		{Year: "2021/2022", Term: "Ganjil", Active: false},
+		{Year: "2021/2022", Term: "Genap", Active: false},
+		{Year: "2022/2023", Term: "Ganjil", Active: false},
+		{Year: "2022/2023", Term: "Genap", Active: false},
+		{Year: "2023/2024", Term: "Ganjil", Active: false},
+		{Year: "2023/2024", Term: "Genap", Active: false},
+		{Year: "2024/2025", Term: "Ganjil", Active: true},
 	}
 
 	for _, s := range semesters {
@@ -71,41 +72,37 @@ func Seed() {
 		}
 	}
 
-	// Ambil semester aktif (S7)
+	// Ambil semester aktif
 	var activeSemester models.Semester
 	db.Where("active = ?", true).First(&activeSemester)
 
-	// ============================
-	// 3. KRS + DETAIL KRS per semester
-	// ============================
-
-	krsData := map[string][]models.KRSDetail{
+	krsData := map[string][]models.Course{
 		"2021/2022-Ganjil": {
-			{CourseCode: "IF101", CourseName: "Pengantar Informatika", SKS: 2},
-			{CourseCode: "IF102", CourseName: "Matematika Dasar", SKS: 3},
+			{CourseCode: "IF101", CourseName: "Pengantar Informatika", SKS: 2, Lecturer: "Dr. Budi Santoso"},
+			{CourseCode: "IF102", CourseName: "Matematika Dasar", SKS: 3, Lecturer: "Mila Rahma, M.Kom"},
 		},
 		"2021/2022-Genap": {
-			{CourseCode: "IF103", CourseName: "Logika & Algoritma", SKS: 3},
-			{CourseCode: "IF104", CourseName: "Pemrograman Dasar", SKS: 3},
+			{CourseCode: "IF103", CourseName: "Logika & Algoritma", SKS: 3, Lecturer: "Dr. Budi Santoso"},
+			{CourseCode: "IF104", CourseName: "Pemrograman Dasar", SKS: 3, Lecturer: "Mila Rahma, M.Kom"},
 		},
 		"2022/2023-Ganjil": {
-			{CourseCode: "IF201", CourseName: "Struktur Data", SKS: 3},
-			{CourseCode: "IF202", CourseName: "Basis Data", SKS: 3},
+			{CourseCode: "IF201", CourseName: "Struktur Data", SKS: 3, Lecturer: "Dr. Budi Santoso"},
+			{CourseCode: "IF202", CourseName: "Basis Data", SKS: 3, Lecturer: "Mila Rahma, M.Kom"},
 		},
 		"2022/2023-Genap": {
-			{CourseCode: "IF203", CourseName: "Sistem Informasi", SKS: 2},
-			{CourseCode: "IF204", CourseName: "Analisis Sistem", SKS: 3},
+			{CourseCode: "IF203", CourseName: "Sistem Informasi", SKS: 2, Lecturer: "Dr. Budi Santoso"},
+			{CourseCode: "IF204", CourseName: "Analisis Sistem", SKS: 3, Lecturer: "Mila Rahma, M.Kom"},
 		},
 		"2023/2024-Ganjil": {
-			{CourseCode: "IF301", CourseName: "Pemrograman Web", SKS: 3},
-			{CourseCode: "IF302", CourseName: "Jaringan Komputer", SKS: 3},
+			{CourseCode: "IF301", CourseName: "Pemrograman Web", SKS: 3, Lecturer: "Dr. Budi Santoso"},
+			{CourseCode: "IF302", CourseName: "Jaringan Komputer", SKS: 3, Lecturer: "Mila Rahma, M.Kom"},
 		},
 		"2023/2024-Genap": {
-			{CourseCode: "IF303", CourseName: "Manajemen Proyek IT", SKS: 3},
+			{CourseCode: "IF303", CourseName: "Manajemen Proyek IT", SKS: 3, Lecturer: "Dr. Budi Santoso"},
 		},
 		"2024/2025-Ganjil": {
-			{CourseCode: "IF401", CourseName: "Mobile Programming", SKS: 3},
-			{CourseCode: "IF402", CourseName: "Machine Learning", SKS: 3},
+			{CourseCode: "IF401", CourseName: "Mobile Programming", SKS: 3, Lecturer: "Dr. Budi Santoso"},
+			{CourseCode: "IF402", CourseName: "Machine Learning", SKS: 3, Lecturer: "Mila Rahma, M.Kom"},
 		},
 	}
 
@@ -129,18 +126,15 @@ func Seed() {
 		}
 		db.Create(&krs)
 
-		// tambah details
-		for _, d := range krsData[key] {
-			d.KRSID = krs.ID
-			db.Create(&d)
+		// tambah courses
+		for _, c := range krsData[key] {
+			c.KRSID = krs.ID
+			db.Create(&c)
 		}
 
-		log.Printf("KRS %s created", key)
+		log.Printf("KRS %s created with courses", key)
 	}
 
-	// ============================
-	// 4. KHS per semester
-	// ============================
 	khsData := []models.KHS{
 		{UserID: student.ID, SemesterID: semesterList[0].ID, GPA: 3.10},
 		{UserID: student.ID, SemesterID: semesterList[1].ID, GPA: 3.20},
@@ -159,9 +153,6 @@ func Seed() {
 		db.Create(&khs)
 	}
 
-	// ============================
-	// 5. PAYMENTS
-	// ============================
 	payments := []models.Payment{
 		{UserID: student.ID, Amount: 2500000, Description: "Pembayaran Semester 1", Paid: true},
 		{UserID: student.ID, Amount: 2500000, Description: "Pembayaran Semester 2", Paid: true},
@@ -179,9 +170,6 @@ func Seed() {
 		db.Create(&p)
 	}
 
-	// ============================
-	// 6. POSTS
-	// ============================
 	posts := []models.Post{
 		{
 			Title:     "Pengumuman Libur Nasional",
