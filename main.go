@@ -49,7 +49,7 @@ func main() {
 	DropAllTables(db)
 
 	// Migrasi ulang semua tabel
-	db.AutoMigrate(&models.User{}, &models.Semester{}, &models.KRS{}, &models.Course{}, &models.KHS{}, &models.Payment{}, &models.Post{})
+	db.AutoMigrate(&models.User{}, &models.Semester{}, &models.KRS{}, &models.Course{}, &models.KHS{}, &models.Payment{}, &models.Post{}, &models.KRSDetail{})
 
 	// Seed data
 	seeders.Seed()
