@@ -128,7 +128,6 @@ func ResetPassword(c *gin.Context) {
 		return
 	}
 
-	// Cek old password
 	if !utils.CheckPasswordHash(body.OldPassword, user.Password) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Old password is incorrect"})
 		return
