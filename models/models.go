@@ -86,16 +86,6 @@ type Payment struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-type Post struct {
-	ID        uint      `gorm:"primarykey" json:"id"`
-	Title     string    `gorm:"type:varchar(150)" json:"title"`
-	Slug      string    `gorm:"type:varchar(150);uniqueIndex" json:"slug"`
-	Body      string    `gorm:"type:text" json:"body"`
-	Published bool      `json:"published"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
 type TugasAkhir struct {
 	ID uint `gorm:"primarykey" json:"id"`
 

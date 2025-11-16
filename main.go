@@ -49,7 +49,7 @@ func main() {
 	DropAllTables(db)
 
 	// Migrasi ulang semua tabel
-	db.AutoMigrate(&models.User{}, &models.Semester{}, &models.KRS{}, &models.Course{}, &models.KHS{}, &models.Payment{}, &models.Post{}, &models.KRSDetail{}, &models.TugasAkhir{})
+	db.AutoMigrate(&models.User{}, &models.Semester{}, &models.KRS{}, &models.Course{}, &models.KHS{}, &models.Payment{}, &models.KRSDetail{}, &models.TugasAkhir{})
 
 	// Seed data
 	seeders.Seed()
@@ -73,10 +73,7 @@ func main() {
 
 			// semester
 			auth.GET("/semester", controllers.ListSemesters)
-			auth.POST("/semester", controllers.CreateSemester)
 			auth.GET("/semester/:id", controllers.GetSemester)
-			auth.PUT("/semester/:id", controllers.UpdateSemester)
-			auth.DELETE("/semester/:id", controllers.DeleteSemester)
 
 			// krs
 			auth.POST("/krs", controllers.CreateKRS)
@@ -96,10 +93,6 @@ func main() {
 			auth.POST("/payments", controllers.CreatePayment)
 			auth.GET("/payments/user/:user_id", controllers.GetPaymentsByUser)
 
-			// posts
-			auth.GET("/posts", controllers.ListPosts)
-			auth.POST("/posts", controllers.CreatePost)
-			auth.GET("/posts/:id", controllers.GetPost)
 		}
 	}
 
