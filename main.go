@@ -61,6 +61,7 @@ func main() {
 		api.POST("/register", controllers.Register)
 		api.POST("/login", controllers.Login)
 		api.POST("/auth/forgot-password", controllers.ForgotPassword)
+		api.POST("/reset-password", controllers.ResetPassword)
 
 		// protected
 		auth := api.Group("/")
