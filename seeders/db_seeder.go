@@ -195,5 +195,44 @@ func Seed() {
 		log.Printf("KRS & KHS %s created with %d courses", key, len(courses))
 	}
 
+	paymentData := map[string]float64{
+		"2021/2022-Ganjil": 10000000,
+		"2021/2022-Genap":  8000000,
+		"2022/2023-Ganjil": 7850000,
+		"2022/2023-Genap":  8200000,
+		"2023/2024-Ganjil": 9000000,
+		"2023/2024-Genap":  9500000,
+		"2024/2025-Ganjil": 10000000,
+	}
+
+	for _, sem := range semesterList {
+		key := sem.Year + "-" + sem.Term
+
+		total, exists := paymentData[key]
+		if !exists {
+			continue
+		}
+
+		// Check existing payments
+		var existing []models.Payment
+		if err := db.Where("user_id = ? AND semester_id = ?", student.ID, sem.ID).Find(&existing).Error; err == nil && len(existing) > 0 {
+			log.Printf("Payments for %s already exist, skipping...", key)
+			continue
+		}
+
+		// Buat payment, misal 50% terbayar
+		paidAmount := total * 0.5
+
+		payment := models.Payment{
+			UserID:      student.ID,
+			SemesterID:  sem.ID,
+			Amount:      total,
+			Paid:        true, // bisa disesuaikan
+			Description: "Pembayaran " + key,
+		}
+		db.Create(&payment)
+
+		log.Printf("Payment for %s created: total %.0f, paid %.0f", key, total, paidAmount)
+	}
 	log.Println("🎉 Seeder Selesai")
 }

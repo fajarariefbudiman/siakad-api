@@ -79,6 +79,7 @@ type KHS struct {
 type Payment struct {
 	ID          uint      `gorm:"primarykey" json:"id"`
 	UserID      uint      `json:"user_id"`
+	SemesterID  uint      `json:"semester_id"`
 	Amount      float64   `json:"amount"`
 	Description string    `gorm:"type:varchar(255)" json:"description"`
 	Paid        bool      `json:"paid"`
