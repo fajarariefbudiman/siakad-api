@@ -111,7 +111,6 @@ func ForgotPassword(c *gin.Context) {
 func ResetPassword(c *gin.Context) {
 	type payload struct {
 		Token       string `json:"token" binding:"required"`
-		OldPassword string `json:"old_password" binding:"required"`
 		NewPassword string `json:"new_password" binding:"required,min=6"`
 	}
 
@@ -121,27 +120,20 @@ func ResetPassword(c *gin.Context) {
 		return
 	}
 
-	// Cari user berdasarkan reset token
 	var user models.User
 	if err := config.DB.Where("reset_token = ?", body.Token).First(&user).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid or expired token"})
 		return
 	}
 
-	if !utils.CheckPasswordHash(body.OldPassword, user.Password) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Old password is incorrect"})
-		return
-	}
-
+	// Hash password
 	hashed, _ := utils.HashPassword(body.NewPassword)
 
-	if err := config.DB.Model(&user).Updates(map[string]interface{}{
+	// Update password + hapus reset token
+	config.DB.Model(&user).Updates(map[string]interface{}{
 		"password":    hashed,
 		"reset_token": "",
-	}).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reset password"})
-		return
-	}
+	})
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Password has been reset successfully",
