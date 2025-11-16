@@ -11,6 +11,7 @@ import (
 func CreateTugasAkhir(c *gin.Context) {
 	var input models.TugasAkhir
 
+	// Bind JSON
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -20,6 +21,15 @@ func CreateTugasAkhir(c *gin.Context) {
 	var user models.User
 	if err := config.DB.First(&user, input.UserID).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Check if user already has a TugasAkhir with the same category
+	var existing models.TugasAkhir
+	if err := config.DB.
+		Where("user_id = ? AND category = ?", input.UserID, input.Category).
+		First(&existing).Error; err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User already has a Tugas Akhir with this category"})
 		return
 	}
 
